@@ -94,6 +94,6 @@ cv2.threshold allows us to apply a threshold to the image based on pixel (so fro
 
 
 
-> 140 the Seagulls are clear visible.
+Greater than 140 the Seagulls are clear visible.
 
 
