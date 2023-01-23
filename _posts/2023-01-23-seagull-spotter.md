@@ -36,7 +36,7 @@ There's quite a lot going on here. We'll need to do some preprocessing to get th
 Given Seagulls are black and white, I think we can convert the image to greyscale. 
 
 1.
-{% highlight c %}
+{% highlight python %}
 import cv2
 
 def convert_to_grayscale(image):
