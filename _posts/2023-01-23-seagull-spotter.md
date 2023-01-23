@@ -179,7 +179,7 @@ for i in range(1, nb_components):
         #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
 
         seagull_count += 1
-      =
+      
  
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
  
