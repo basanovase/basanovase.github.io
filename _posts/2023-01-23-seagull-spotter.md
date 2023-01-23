@@ -157,7 +157,6 @@ We will need to apply some further OpenCV magic to clean up these smaller shapes
 
 {% highlight python %}
 
-#Read in the image
 image = cv2.imread("/Users/flynnmclean/Downloads/20230120_181747.jpg")
 #Convert it to grey
 grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -180,9 +179,9 @@ for i in range(1, nb_components):
         #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
 
         seagull_count += 1
-        #Grab the crop so the rectangle HASNT been drawn
+      =
  
-    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
  
 cv2.imshow('connectedComponentsWithStats',image)
 
@@ -191,15 +190,89 @@ print(f'Seagull count: {seagull_count}')
 cv2.waitKey(0)
 
 {% endhighlight %}
-think we can also apply some logic to only plot the larger connectedComponents.
 
+<i>Seagull count: 5671</i>
 
+Certainly a more reasonable amount of Seagulls
 
-let's also clean it up into a nicer class structure 
+I think we can do better though - we can also apply some logic to only plot the larger connectedComponents. A quick google reveals there's also a couple of easy OpenCV filters we can apply to the image.
 
-
+let's also clean it up into a nicer class structure for the Pythonistas:
 
 {% highlight python %}
+
+class SeagullDetector:
+    def __init__(self, image):
+        self.image = image
+        self.seagull_count = 0
+        self.seagull_crops = []
+
+    def convert_to_grayscale(self):
+        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+
+    def threshold_image(self):
+        _, self.thresh = cv2.threshold(self.gray, 230, 255, cv2.THRESH_BINARY)
+
+    def perform_size_filtering(self):
+        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(self.thresh, connectivity=8)
+        for i in range(1, nb_components):
+            size = stats[i, cv2.CC_STAT_AREA]
+            #if size < 370:
+                #continue
+            x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+            aspect_ratio = float(w) / h
+            #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
+            if aspect_ratio > 0.8 and aspect_ratio < 1.2:
+                
+                #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right? Covered later on
+                x, y, w, h = increase_crop_size(x, y, w, h, self.image.shape[1],  self.image.shape[0])
+                self.seagull_count += 1
+                #Grab the crop so the rectangle HASNT been drawn
+                #Covered later on!
+                seagull_crop = self.image[y:y+h, x:x+w]
+                cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
+                self.seagull_crops.append(seagull_crop)
+
+    def detect_seagulls(self):
+        self.convert_to_grayscale()
+        self.threshold_image()
+        self.perform_size_filtering()
+        print(self.seagull_count)
+        return self.seagull_count, self.image
+
+{% highlight python %}
+
+
+cv2.erode()
+cv2.dilate()
+
+{% endhighlight %}
+
+
+Google and stackoverflow have advised there are a couple of operations that should "reduce the size of smaller" components
+
+I'll apply these as a function to the class so I can toggle them on and off and gauge the impact. I'm also going to add a list of the crops so I can use them later if I want to do any classification tasks.
+
+I'm also going to add a function to increase the size of the snip, so that the snipped image extends past the edges of the whole detected object.
+
+{% highlight python %}
+
+
+def increase_crop_size(x, y, w, h, image_shape_x, image_shape_y):
+    
+            #Increase the crop size
+            x = int(x - 1 * w)
+            y = int(y - 1 * h)
+            w = int(2 * w)
+            h = int(2 * h)
+            
+            # Ensure that the crop remains within the bounds of the image
+            x = max(x, 0)
+            y = max(y, 0)
+            w = min(w, image_shape_x - x)
+            h = min(h, image_shape_y - y)
+            
+            return x, y, w, h
 
 class SeagullDetector:
     def __init__(self, image):
@@ -229,7 +302,9 @@ class SeagullDetector:
             aspect_ratio = float(w) / h
             #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
             if aspect_ratio > 0.8 and aspect_ratio < 1.2:
-      
+                
+                #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
+                x, y, w, h = increase_crop_size(x, y, w, h, self.image.shape[1],  self.image.shape[0])
                 self.seagull_count += 1
                 #Grab the crop so the rectangle HASNT been drawn
                 seagull_crop = self.image[y:y+h, x:x+w]
@@ -240,11 +315,10 @@ class SeagullDetector:
     def detect_seagulls(self):
         self.convert_to_grayscale()
         self.threshold_image()
-        #self.perform_morphological_operations()
+        self.perform_morphological_operations()
         self.perform_size_filtering()
         print(self.seagull_count)
         return self.seagull_count, self.image
-
-    
+        
 
 {% endhighlight %}
