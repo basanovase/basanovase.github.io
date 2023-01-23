@@ -381,4 +381,11 @@ if __name__ == "__main__":
 
 <i>Seagull count: 85</i>
 
-Nice! With those changes we seem to be at a <i>reasonable</i> number. We would need further labelled data to check accuracy, but I think the result based on the sample images is OK!
+Nice! With those changes we seem to be at a <i>reasonable</i> number. We would need further labelled data to check accuracy, but I think the result based on the sample images is OK is pretty darn good for just computer vision alone! 
+
+Here's the world's most annoying montage:
+
+
+![LAMEMONTAGE](/assets/LameMontage.jpg)
+
+
