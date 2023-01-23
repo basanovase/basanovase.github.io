@@ -14,17 +14,17 @@ All of a sudden there's a lot of birds on the beach I live in front of.  Natural
 
 How many birds are there? Are they always on the beach? Are they having a good time? 
 
-These are definitely questions that can't go unanswered. Join me on a pointless journey into computer vision, machine learning and using the latest technologies to answer questions that definitely don't need to be answered. 
+These are definitely questions that can't go unanswered. Join me on a pointless journey into computer vision, machine learning and using the latest technologies to answer questions that definitely don't need to be answered. Why? Why not!
 
 <B>THE PROBLEM</B>:
 
-To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task.
+To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have far too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task. We can then add sensors to collect data to our hearts content.
 
 ![ESP32](assets/esp32.jpeg)
 
 <b>EXPLORATIONS USING OPENCV</b>:
 
-Rather that racing straight to using a supervised learning solution - I thought it would be fun to explore how far we can get with computer vision.
+Rather that racing straight to using a supervised learning solution - I thought it would be fun to first explore how far we can get with computer vision.
 
 
 An example image:
@@ -33,9 +33,9 @@ An example image:
 
 There's quite a lot going on here. We'll need to do some preprocessing to get things in a suitable state for some OpenCV magic.
 
-Given Seagulls are black and white, I think we can convert the image to greyscale. This will reduce the amount of data we need to process and some noise in the image. Helpfully, Seagulls are also black and white. The list of positive things I can say about seagulls grows!
+Given Seagulls are black and white, I think we can convert the image to greyscale. This will reduce the amount of data we need to process and some noise in the image. Helpfully, Seagulls are also black and white. The list of positive things I can say about seagulls grows! This will also be an important step later in preprocessing. 
 
-1.
+
 {% highlight python %}
 import cv2
 
@@ -45,60 +45,55 @@ def convert_to_grayscale(image):
 
 {% endhighlight %}
 
-2.  
 Looking into how we can better recognize Seagulls using the OpenCV library requires giving some thought about the shape of seagulls. Given I don't really want to spend too long thinking about seagulls, I decided to go with the most obvious thing based on the data to date.
 
 Seagulls are usually wider than they are tall:
 
 ![SEAGULLPROOF](/assets/SeagullProof.jpg)
-You can enable MathJax by setting `mathjax: true` on a page or globally in the `_config.yml`. Some examples:
 
-[Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula) relates the  complex exponential function to the trigonometric functions.
+If we can process the image down to the essence of seagulls - we should be able to identify those shapes in the image, and count them accordingly. Granted this will only work when the seagulls are facing a certain way, but let's see how far we get and go from there!
 
-$$ e^{i\theta}=\cos(\theta)+i\sin(\theta) $$
+{% highlight python %}
 
-The [Euler-Lagrange](https://en.wikipedia.org/wiki/Lagrangian_mechanics) differential equation is the fundamental equation of calculus of variations.
+ cv2.connectedComponentsWithStats() 
 
-$$ \frac{\mathrm{d}}{\mathrm{d}t} \left ( \frac{\partial L}{\partial \dot{q}} \right ) = \frac{\partial L}{\partial q} $$
+{% endhighlight %}
+A connected component is basically a blob of pixels that are joined together. 
 
-The [Schrödinger equation](https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation) describes how the quantum state of a quantum system changes with time.
+We should be able to use this function to turn the seagulls into blobs based on their colour, get the coordinates of the blobs if we want to, or slice them our of the image for use later.
 
-$$ i\hbar\frac{\partial}{\partial t} \Psi(\mathbf{r},t) = \left [ \frac{-\hbar^2}{2\mu}\nabla^2 + V(\mathbf{r},t)\right ] \Psi(\mathbf{r},t) $$
+Let's apply some thresholding to the image, and eyeball the results:
 
-## Code
+{% highlight python %}
 
-Embed code by putting `{{ "{% highlight language " }}%}` `{{ "{% endhighlight " }}%}` blocks around it. Adding the parameter `linenos` will show source lines besides the code.
+#Lets apply some thresholding to the image to see if we can isolate the Seagull shape!
 
-{% highlight c %}
 
-static void asyncEnabled(Dict* args, void* vAdmin, String* txid, struct Allocator* requestAlloc)
-{
-    struct Admin* admin = Identity_check((struct Admin*) vAdmin);
-    int64_t enabled = admin->asyncEnabled;
-    Dict d = Dict_CONST(String_CONST("asyncEnabled"), Int_OBJ(enabled), NULL);
-    Admin_sendMessage(&d, txid, admin);
-}
+lower_bound = 0
+
+for i in range(10):
+    
+    _, thresh = cv2.threshold(gray, lower_bound, 255, cv2.THRESH_BINARY)
+    
+    lower_bound += 20
+    
+    cv2.imshow("Thresholded Image", thresh)
+    
+    cv2.waitKey(0)
+    
 
 {% endhighlight %}
 
-## Gists
 
-With the `jekyll-gist` plugin, which is preinstalled on Github Pages, you can embed gists simply by using the `gist` command:
+This should hopefully give as an idea of the best threshold value to use, in order to maximizes the separation between the gulls' and the background
 
-<script src="https://gist.github.com/5555251.js?file=gist.md"></script>
+cv2.threshold allows us to apply a threshold to the image based on pixel (so from 0 - 255 in a grey image).
 
-## Images
 
-Upload an image to the *assets* folder and embed it with `![title](/assets/name.jpg))`. Keep in mind that the path needs to be adjusted if Jekyll is run inside a subfolder.
+![ThresholdGradient](/assets/ThresholdGradient.jpg)
 
-A wrapper `div` with the class `large` can be used to increase the width of an image or iframe.
 
-![Flower](https://user-images.githubusercontent.com/4943215/55412447-bcdb6c80-5567-11e9-8d12-b1e35fd5e50c.jpg)
 
-[Flower](https://unsplash.com/photos/iGrsa9rL11o) by Tj Holowaychuk
+> 140 the Seagulls are clear visible.
 
-## Embedded content
 
-You can also embed a lot of stuff, for example from YouTube, using the `embed.html` include.
-
-{% include embed.html url="https://www.youtube.com/embed/_C0A5zX-iqM" %}
