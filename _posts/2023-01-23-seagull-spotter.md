@@ -388,4 +388,24 @@ Here's the world's most annoying montage:
 
 ![LAMEMONTAGE](/assets/LameMontage.jpg)
 
+Let's also add a montage function, because at this point, why not 
+
+{% highlight python %}
+
+def create_montage(image_list):
+    images = [Image.fromarray(image) for image in image_list]
+    widths, heights = zip(*(i.size for i in images))
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    new_im = Image.new('RGB', (total_width, max_height))
+
+    x_offset = 0
+    for im in images:
+        new_im.paste(im, (x_offset,0))
+        x_offset += im.size[0]
+
+    return new_im
+
+{% endhighlight %}
 
