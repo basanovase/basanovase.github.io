@@ -31,9 +31,21 @@ An example image:
 
 ![EXAMPLE](https://github.com/basanovase/basanovase.github.io/blob/master/assets/OriginalImage.jpg)
 
+There's quite a lot going on here. We'll need to do some preprocessing to get things in a suitable state for some OpenCV magic.
 
+Given Seagulls are black and white, I think we can convert the image to greyscale. 
 
+1.
+{% highlight c %}
+import cv2
 
+def convert_to_grayscale(image):
+        grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        return grey_image
+
+{% endhighlight %}
+
+ 
 You can enable MathJax by setting `mathjax: true` on a page or globally in the `_config.yml`. Some examples:
 
 [Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula) relates the  complex exponential function to the trigonometric functions.
