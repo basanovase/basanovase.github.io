@@ -10,11 +10,30 @@ categories: media
 
 ## MathJax
 
-All of a sudden there's a lot of birds on the beach I live in front of.  Naturally, questions arise about the seagulls (when you have far too much time on your hands). 
+All of a sudden there's a lot of birds on the beach I live in front of.  Naturally, questions arise about the seagulls:
 
-How many birds are there? Are they always on the beach? How large are they? 
+How many birds are there? Are they always on the beach? Are they having a good time? 
 
 These are definitely questions that can't go unanswered. Join me on a pointless journey into computer vision, machine learning and using the latest technologies to answer questions that definitely don't need to be answered. 
+
+<B>THE PROBLEM</B>:
+
+To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task.
+
+[ESP32](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.arducam.com%2Fesp32-machine-vision-learning-guide%2F&psig=AOvVaw0eMudnn7-MmKjNH-OZ6Rc-&ust=1674521598076000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCJjj9pm93PwCFQAAAAAdAAAAABAE) 
+
+
+<b>EXPLORATIONS USING OPENCV</b>:
+
+Rather that racing straight to using a supervised learning solution - I thought it would be fun to explore how far we can get with computer vision.
+
+
+An example image:
+
+
+
+
+
 You can enable MathJax by setting `mathjax: true` on a page or globally in the `_config.yml`. Some examples:
 
 [Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula) relates the  complex exponential function to the trigonometric functions.
