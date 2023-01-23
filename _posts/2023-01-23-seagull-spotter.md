@@ -253,7 +253,7 @@ Google and stackoverflow have advised there are a couple of operations that shou
 
 I'll apply these as a function to the class so I can toggle them on and off and gauge the impact. I'm also going to add a list of the crops so I can use them later if I want to do any classification tasks.
 
-I'm also going to add a function to increase the size of the snip, so that the snipped image extends past the edges of the whole detected object.
+I'm also going to add a function to increase the size of the snip, so that the snipped image extends past the edges of the whole detected object. We'll also add in the size filtering we discussed.
 
 {% highlight python %}
 
@@ -273,6 +273,9 @@ def increase_crop_size(x, y, w, h, image_shape_x, image_shape_y):
             h = min(h, image_shape_y - y)
             
             return x, y, w, h
+
+
+
 
 class SeagullDetector:
     def __init__(self, image):
@@ -296,8 +299,8 @@ class SeagullDetector:
         nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(self.thresh, connectivity=8)
         for i in range(1, nb_components):
             size = stats[i, cv2.CC_STAT_AREA]
-            #if size < 370:
-                #continue
+            if size < 370:
+                continue
             x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
             aspect_ratio = float(w) / h
             #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
