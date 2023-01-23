@@ -287,7 +287,7 @@ class SeagullDetector:
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
     def threshold_image(self):
-        _, self.thresh = cv2.threshold(self.gray, 230, 255, cv2.THRESH_BINARY)
+        _, self.thresh = cv2.threshold(self.gray, 170, 255, cv2.THRESH_BINARY)
 
     def perform_morphological_operations(self):
         kernel = np.ones((5,5),np.uint8)
@@ -299,7 +299,8 @@ class SeagullDetector:
         nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(self.thresh, connectivity=8)
         for i in range(1, nb_components):
             size = stats[i, cv2.CC_STAT_AREA]
-            if size < 370:
+     
+            if size < self.image.shape[1]*0.28:
                 continue
             x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
             aspect_ratio = float(w) / h
@@ -325,3 +326,6 @@ class SeagullDetector:
         
 
 {% endhighlight %}
+
+<i>Seagull count: 85</i>
+Nice! With those changes we seem to be at a <i>reasonable</i> number. We would need further labelled data to check accuracy, but I think the result based on the sample images is OK!
