@@ -580,3 +580,9 @@ if __name__ == "__main__":
 {% endhighlight %}
 
 
+## EXPLORATIONS USING CNN
+
+A convolutional neural network (CNN) is a good fit for this task. The general idea is to train a CNN on a large dataset of images labeled with seagulls, or no seagulls. Given the weekend is running out I'm just going to use a pre-trained model like YOLO
+
+
+
