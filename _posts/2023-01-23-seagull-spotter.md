@@ -8,21 +8,21 @@ categories: media
 ![Swiss Alps](https://user-images.githubusercontent.com/4943215/55412536-edbba180-5567-11e9-9c70-6d33bca3f8ed.jpg)
 
 
-## MathJax
 
-All of a sudden there's a lot of birds on the beach I live in front of.  Naturally, questions arise about the seagulls:
+
+There's a lot of birds on the beach I live in front of.  Naturally, questions arise about the seagulls:
 
 How many birds are there? Are they always on the beach? Are they having a good time? 
 
 These are definitely questions that can't go unanswered. Join me on a pointless journey into computer vision, machine learning and using the latest technologies to answer questions that definitely don't need to be answered. Why? Why not!
 
-<B>THE PROBLEM</B>:
+## THE PROBLEM:
 
 To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have far too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task. We can then add sensors to collect data to our hearts content.
 
 ![ESP32](/assets/esp32.jpg)
 
-<b>EXPLORATIONS USING OPENCV</b>:
+## EXPLORATIONS USING OPENCV:
 
 Rather that racing straight to using a supervised learning solution - I thought it would be fun to first explore how far we can get with computer vision.
 
