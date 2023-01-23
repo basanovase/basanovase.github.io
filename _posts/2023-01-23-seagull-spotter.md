@@ -124,9 +124,11 @@ for i in range(1, nb_components):
     #if size < 370:
         #continue
     x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+    
+    #Create an aspect ratio for later use
     aspect_ratio = float(w) / h
     #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
-    #if aspect_ratio > 0.8 and aspect_ratio < 1.2:
+   
         
         #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
 
@@ -144,7 +146,7 @@ cv2.waitKey(0)
 
 {% endhighlight %}
 
-<i>Seagull count: 16326</i> - wowza, that's an outrageous amount of seagulls.
+<i>Seagull count: 16326</i> - wowza, that's an outrageous amount of seagulls. Hmm.
 
 Eyeballing the image I can see we're actually detected most of the seagulls which is great, but we appear to be also detecting all the smaller patches of white:
 
@@ -158,43 +160,50 @@ let's also clean it up into a nicer class structure
 
 {% highlight python %}
 
-#Lets apply some thresholding to the image to see if we can isolate the Seagull shape!
+class SeagullDetector:
+    def __init__(self, image):
+        self.image = image
+        self.seagull_count = 0
+        self.seagull_crops = []
 
+    def convert_to_grayscale(self):
+        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
-lower_bound = 0
+    def threshold_image(self):
+        _, self.thresh = cv2.threshold(self.gray, 230, 255, cv2.THRESH_BINARY)
 
-#Read in the image
-image = cv2.imread("/Users/flynnmclean/Downloads/20230120_181747.jpg")
-#Convert it to grey
-grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    def perform_morphological_operations(self):
+        kernel = np.ones((5,5),np.uint8)
+        erosion = cv2.erode(self.thresh, kernel, iterations = 1)
+        dilation = cv2.dilate(erosion, kernel, iterations = 1)
+        self.thresh = dilation
 
-_, thresh = cv2.threshold(grey, 230, 255, cv2.THRESH_BINARY)
+    def perform_size_filtering(self):
+        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(self.thresh, connectivity=8)
+        for i in range(1, nb_components):
+            size = stats[i, cv2.CC_STAT_AREA]
+            #if size < 370:
+                #continue
+            x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+            aspect_ratio = float(w) / h
+            #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
+            if aspect_ratio > 0.8 and aspect_ratio < 1.2:
+      
+                self.seagull_count += 1
+                #Grab the crop so the rectangle HASNT been drawn
+                seagull_crop = self.image[y:y+h, x:x+w]
+                cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
+         
+                self.seagull_crops.append(seagull_crop)
 
-seagull_count = 0
+    def detect_seagulls(self):
+        self.convert_to_grayscale()
+        self.threshold_image()
+        #self.perform_morphological_operations()
+        self.perform_size_filtering()
+        print(self.seagull_count)
+        return self.seagull_count, self.image
 
-nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(thresh, connectivity=8)
-
-for i in range(1, nb_components):
-    size = stats[i, cv2.CC_STAT_AREA]
-    #if size < 370:
-        #continue
-    x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
-    aspect_ratio = float(w) / h
-    #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
-    #if aspect_ratio > 0.8 and aspect_ratio < 1.2:
-        
-        #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
-
-    seagull_count += 1
-        #Grab the crop so the rectangle HASNT been drawn
- 
-    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
- 
-cv2.imshow('connectedComponentsWithStats',image)
-
-cv2.imwrite('/Users/flynnmclean/Documents/Projects/BirdFinder/connectedComponentsWithStats.jpg', image)
-print(f'Seagull count: {seagull_count}')
-cv2.waitKey(0)
     
 
 {% endhighlight %}
