@@ -29,6 +29,7 @@ Rather that racing straight to using a supervised learning solution - I thought 
 
 An example image:
 
+![EXAMPLE](https://github.com/basanovase/basanovase.github.io/blob/master/assets/OriginalImage.jpg)
 
 
 
