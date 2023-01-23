@@ -152,7 +152,48 @@ Eyeballing the image I can see we're actually detected most of the seagulls whic
 
 ![SEAGULLPROOF](/assets/connectedComponentsWithStats.jpg)
 
-We will need to apply some further OpenCV magic to clean up these smaller shapes. I think we can also apply some logic to only plot the larger connectedComponents.
+We will need to apply some further OpenCV magic to clean up these smaller shapes. Remember our hilarious seagull juxtaposition from earlier? We'll use that theory to apply some logic based on the aspect ratio of the connectedComponent:
+
+
+{% highlight python %}
+
+#Read in the image
+image = cv2.imread("/Users/flynnmclean/Downloads/20230120_181747.jpg")
+#Convert it to grey
+grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+_, thresh = cv2.threshold(grey, 230, 255, cv2.THRESH_BINARY)
+
+seagull_count = 0
+
+nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(thresh, connectivity=8)
+
+for i in range(1, nb_components):
+    size = stats[i, cv2.CC_STAT_AREA]
+    #if size < 370:
+        #continue
+    x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+    aspect_ratio = float(w) / h
+    #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
+    if aspect_ratio > 0.8 and aspect_ratio < 1.2:
+        
+        #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
+
+        seagull_count += 1
+        #Grab the crop so the rectangle HASNT been drawn
+ 
+    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
+ 
+cv2.imshow('connectedComponentsWithStats',image)
+
+cv2.imwrite('/Users/flynnmclean/Documents/Projects/BirdFinder/connectedComponentsWithStats.jpg', image)
+print(f'Seagull count: {seagull_count}')
+cv2.waitKey(0)
+
+{% endhighlight %}
+think we can also apply some logic to only plot the larger connectedComponents.
+
+
 
 let's also clean it up into a nicer class structure 
 
