@@ -240,6 +240,11 @@ class SeagullDetector:
         print(self.seagull_count)
         return self.seagull_count, self.image
 
+{% endhighlight %}
+
+Google and stackoverflow have advised there are a couple of operations that should "reduce the size of smaller" components
+
+
 {% highlight python %}
 
 
@@ -249,7 +254,6 @@ cv2.dilate()
 {% endhighlight %}
 
 
-Google and stackoverflow have advised there are a couple of operations that should "reduce the size of smaller" components
 
 I'll apply these as a function to the class so I can toggle them on and off and gauge the impact. I'm also going to add a list of the crops so I can use them later if I want to do any classification tasks.
 
