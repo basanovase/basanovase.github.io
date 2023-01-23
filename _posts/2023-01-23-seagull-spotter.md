@@ -33,7 +33,7 @@ An example image:
 
 There's quite a lot going on here. We'll need to do some preprocessing to get things in a suitable state for some OpenCV magic.
 
-Given Seagulls are black and white, I think we can convert the image to greyscale. 
+Given Seagulls are black and white, I think we can convert the image to greyscale. This will reduce the amount of data we need to process and some noise in the image. Helpfully, Seagulls are also black and white. The list of positive things I can say about seagulls grows!
 
 1.
 {% highlight python %}
@@ -45,7 +45,12 @@ def convert_to_grayscale(image):
 
 {% endhighlight %}
 
- 
+2.  
+Looking into how we can better recognize Seagulls using the OpenCV library requires giving some thought about the shape of seagulls. Given I don't really want to spend too long thinking about seagulls, I decided to go with the most obvious thing based on the data to date.
+
+Seagulls are usually wider than they are tall:
+
+![SEAGULLPROOF](/assets/SeagullProof.jpg)
 You can enable MathJax by setting `mathjax: true` on a page or globally in the `_config.yml`. Some examples:
 
 [Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula) relates the  complex exponential function to the trigonometric functions.
