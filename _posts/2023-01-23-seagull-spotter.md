@@ -388,9 +388,70 @@ Here's the world's most annoying montage:
 
 ![LAMEMONTAGE](/assets/LameMontage.jpg)
 
-Let's also add a montage function, because at this point, why not 
+Let's also add a montage function, because at this point, why not, and a feature the use the webcam prior to shifting over to the ESP32 device for testing. 
 
 {% highlight python %}
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jan 23 21:29:09 2023
+
+@author: flynnmclean
+"""
+
+
+
+import cv2
+import numpy as np
+import os
+from PIL import Image
+
+
+def stream_from_webcam():
+    
+    import cv2
+
+    # Create an instance of the SeagullDetector class
+   
+    
+    # Open a connection to the webcam
+    cap = cv2.VideoCapture(0)
+    
+    # Create a window to display the output
+    cv2.namedWindow("Seagull Detection", cv2.WINDOW_NORMAL)
+    
+    while True:
+        # Read a frame from the webcam
+        ret, frame = cap.read()
+        
+        isd = SeagullDetector(frame)
+        # Detect seagulls in the frame
+        seagull_count, output_image = isd.detect_seagulls()
+        
+        # Show the output image
+        #cv2.imshow("Seagull Detection", output_image)
+        
+        for x, y, w, h in isd.seagull_bboxs:
+            
+            cv2.rectangle(output_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    
+        # Show the output image
+       
+        cv2.putText(output_image, "Gull count: {}".format(isd.seagull_count), (10, output_image.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    
+    
+        cv2.imshow("Seagull Detection", output_image)
+        
+        # Exit the loop when the 'q' key is pressed
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        
+        
+    
+    # Release the webcam and close the window
+    cap.release()
+    cv2.destroyAllWindows()
 
 def create_montage(image_list):
     images = [Image.fromarray(image) for image in image_list]
@@ -406,6 +467,111 @@ def create_montage(image_list):
         x_offset += im.size[0]
 
     return new_im
+
+
+def increase_crop_size(x, y, w, h, image_shape_x, image_shape_y):
+    
+            #Increase the crop size
+            x = int(x - 1.2 * w)
+            y = int(y - 1.2 * h)
+            w = int(2.2 * w)
+            h = int(2.2 * h)
+            
+            # Ensure that the crop remains within the bounds of the image
+            x = max(x, 0)
+            y = max(y, 0)
+            w = min(w, image_shape_x - x)
+            h = min(h, image_shape_y - y)
+            
+            return x, y, w, h
+
+
+def centre_image(x, y, w, h, image_shape_x, image_shape_y):
+    
+    #Use the centroid of each seagull to shift the axis of the crop. 
+    x_centroid = int(x + (w/2))
+    y_centroid = int(y + (h/2))
+    
+    #Shift the crop so that the seagull is centred
+    x = int(x_centroid - (w/5))
+    y = int(y_centroid - (h/5))
+    
+    #Ensure that the crop remains within the bounds of the image
+    x = max(x, 0)
+    y = max(y, 0)
+    w = min(w, image_shape_x - x)
+    h = min(h, image_shape_y - y)
+    
+    return x, y, w, h
+
+
+
+
+class SeagullDetector:
+    
+    def __init__(self, image):
+        self.image = image
+        self.original_image = image
+        self.seagull_count = 0
+        self.seagull_crops = []
+        self.seagull_bboxs = []
+        
+    def convert_to_grayscale(self):
+        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+
+    def threshold_image(self):
+        _, self.thresh = cv2.threshold(self.gray, 170, 255, cv2.THRESH_BINARY)
+
+    def perform_morphological_operations(self):
+        kernel = np.ones((5,5),np.uint8)
+        erosion = cv2.erode(self.thresh, kernel, iterations = 1)
+        dilation = cv2.dilate(erosion, kernel, iterations = 1)
+        self.thresh = dilation
+
+    def perform_size_filtering(self):
+        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(self.thresh, connectivity=8)
+        for i in range(1, nb_components):
+            size = stats[i, cv2.CC_STAT_AREA]
+     
+            if size < self.image.shape[1]*0.05:
+                continue
+            x, y, w, h, = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+            aspect_ratio = float(w) / h
+            #SEAGULLS ARE USUALL WIDER THAN THE ARE TALLw
+            if aspect_ratio > 0.8 and aspect_ratio < 1.2:
+                
+                #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
+                x, y, w, h = increase_crop_size(x, y, w, h, self.image.shape[1],  self.image.shape[0])
+                
+                x, y, w, h = centre_image(x, y, w, h, self.image.shape[1], self.image.shape[0])
+                
+                self.seagull_bboxs.append([x, y, w, h])
+                self.image_copy = self.image.copy()
+                self.seagull_count += 1
+                #Grab the crop so the rectangle HASNT been drawn
+                seagull_crop = self.image[y:y+h, x:x+w]
+                
+                cv2.rectangle(self.image_copy, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
+         
+                self.seagull_crops.append(seagull_crop)
+
+    def detect_seagulls(self):
+        self.convert_to_grayscale()
+        self.threshold_image()
+        self.perform_morphological_operations()
+        self.perform_size_filtering()
+        print(self.seagull_count)
+        return self.seagull_count, self.image
+
+
+
+
+
+if __name__ == "__main__":
+
+    stream_from_webcam()
+
+        
 
 {% endhighlight %}
 
