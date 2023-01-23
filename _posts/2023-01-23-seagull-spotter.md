@@ -20,7 +20,7 @@ These are definitely questions that can't go unanswered. Join me on a pointless 
 
 To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have far too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task. We can then add sensors to collect data to our hearts content.
 
-![ESP32](assets/esp32.jpeg)
+![ESP32](/assets/esp32.jpg)
 
 <b>EXPLORATIONS USING OPENCV</b>:
 
