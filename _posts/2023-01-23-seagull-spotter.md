@@ -253,18 +253,24 @@ Google and stackoverflow have advised there are a couple of operations that shou
 
 I'll apply these as a function to the class so I can toggle them on and off and gauge the impact. I'm also going to add a list of the crops so I can use them later if I want to do any classification tasks.
 
-I'm also going to add a function to increase the size of the snip, so that the snipped image extends past the edges of the whole detected object. We'll also add in the size filtering we discussed.
+I'm also going to add a function to increase the size of the snip, so that the snipped image extends past the edges of the whole detected object. I'll also add a function to centre the snip more. We'll also add in the size filtering we discussed.
 
 {% highlight python %}
+
+
+import cv2
+import numpy as np
+import os
+
 
 
 def increase_crop_size(x, y, w, h, image_shape_x, image_shape_y):
     
             #Increase the crop size
-            x = int(x - 1 * w)
-            y = int(y - 1 * h)
-            w = int(2 * w)
-            h = int(2 * h)
+            x = int(x - 1.2 * w)
+            y = int(y - 1.2 * h)
+            w = int(2.2 * w)
+            h = int(2.2 * h)
             
             # Ensure that the crop remains within the bounds of the image
             x = max(x, 0)
@@ -275,11 +281,32 @@ def increase_crop_size(x, y, w, h, image_shape_x, image_shape_y):
             return x, y, w, h
 
 
+def centre_image(x, y, w, h, image_shape_x, image_shape_y):
+    
+    #Use the centroid of each seagull to shift the axis of the crop. 
+    x_centroid = int(x + (w/2))
+    y_centroid = int(y + (h/2))
+    
+    #Shift the crop so that the seagull is centred
+    x = int(x_centroid - (w/4))
+    y = int(y_centroid - (h/4))
+    
+    #Ensure that the crop remains within the bounds of the image
+    x = max(x, 0)
+    y = max(y, 0)
+    w = min(w, image_shape_x - x)
+    h = min(h, image_shape_y - y)
+    
+    return x, y, w, h
+
+
 
 
 class SeagullDetector:
+    
     def __init__(self, image):
         self.image = image
+        self.original_image = image
         self.seagull_count = 0
         self.seagull_crops = []
 
@@ -309,10 +336,14 @@ class SeagullDetector:
                 
                 #Make the crop bigger to capture the whole gull, nobody likes a partial gulls, am I right?
                 x, y, w, h = increase_crop_size(x, y, w, h, self.image.shape[1],  self.image.shape[0])
+                
+                x, y, w, h = centre_image(x, y, w, h, self.image.shape[1], self.image.shape[0])
+                self.image_copy = self.image.copy()
                 self.seagull_count += 1
                 #Grab the crop so the rectangle HASNT been drawn
                 seagull_crop = self.image[y:y+h, x:x+w]
-                cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
+                
+                cv2.rectangle(self.image_copy, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a rectangle around the seagull
          
                 self.seagull_crops.append(seagull_crop)
 
@@ -323,7 +354,28 @@ class SeagullDetector:
         self.perform_size_filtering()
         print(self.seagull_count)
         return self.seagull_count, self.image
+
+
+
+
+
+if __name__ == "__main__":
+
+    img = cv2.imread("/Users/flynnmclean/Downloads/20230120_181747.jpg")
+    
+    isd = SeagullDetector(img)
+    
+    test = isd.detect_seagulls()
+
+    cv2.imshow('SEAGULLIMAGE', isd.image)
+    
+    cv2.waitKey(0)
+    
+    for item in isd.seagull_crops:
         
+        cv2.imshow('SEAGULL CROP', item)
+        
+        cv2.waitKey(0)
 
 {% endhighlight %}
 
