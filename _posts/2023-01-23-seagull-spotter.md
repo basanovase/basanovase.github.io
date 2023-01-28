@@ -588,7 +588,8 @@ A convolutional neural network (CNN) is a good fit for this task. The general id
 This was pretty interesting - I ended up initially trying the OpenCv implementation of YOLO but found this was clunky and not configurable enough.
 
 
-What I ended up trying was the javascript implementation of Tensorflow (A good opportunity to improve my JS skills!) - this was really cool as you can literally just add the script tagg to an .html file with leveraging some basic built-in image recognition, and bam you've got object recognition happening in your browser. The library is really easy to use and intuitive, and a similar concept of just passing in an image and gett bounding boxes that should be plotted.
+What I ended up trying was the javascript implementation of Tensorflow (A good opportunity to improve my JS skills!) - this was really cool as you can literally just add the script tagg to an .html file with leveraging some basic built-in image recognition, and bam you've got object recognition happening in your browser. The library is really easy to use and intuitive, and a similar concept of just passing in an image and gett bounding boxes that should be plotted. I also like this as I could use an old broken phone with zooming capability to narrow down the monitoring area.
+
 
 Very cool! - full example:
 
