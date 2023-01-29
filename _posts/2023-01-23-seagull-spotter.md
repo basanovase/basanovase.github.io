@@ -594,6 +594,9 @@ What I ended up trying was the javascript implementation of Tensorflow (A good o
 Very cool! - full example:
 
 
+{% include tfjs.html %}
+
+
 
 
 
