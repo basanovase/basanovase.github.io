@@ -17,7 +17,9 @@ These are definitely <b>normal</b> questions that are worth dedicating a weekend
 
 ## THE PROBLEM:
 
-To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have far too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task. We can then add sensors to collect data to our hearts content.
+To start to address some of these burning questions, we first need a consistent view of the birds and their environment. If you're like me and have and have far too much tech lying around, one of the ESP32 microcontrollers seems like a great fit for the task. We can then add sensors to collect data to our hearts content and produce some interesting reporting.
+
+We'll keep this in mind for later.
 
 ![ESP32](/assets/esp32.jpg)
 
