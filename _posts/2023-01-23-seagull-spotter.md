@@ -13,7 +13,7 @@ There's a lot of birds on the beach I live in front of.  Naturally, questions ar
 
 How many birds are there? Are they always on the beach? Are they having a good time? 
 
-These are definitely questions that can't go unanswered. Join me on a pointless journey into computer vision, machine learning and using the latest technologies to answer questions that definitely don't need to be answered. Why? Why not!
+These are definitely <b>normal</b> questions that are worth dedicating a weekend to. Join me on a pointless journey into computer vision, machine learning and using the latest technologies to answer questions that definitely don't need to be answered. It's about the things you learn along the way, or something inspiring along those lines
 
 ## THE PROBLEM:
 
@@ -23,8 +23,7 @@ To start to address some of these burning questions, we first need a consistent 
 
 ## EXPLORATIONS USING OPENCV:
 
-Rather that racing straight to using a supervised learning solution - I thought it would be fun to first explore how far we can get with computer vision.
-
+Rather that racing straight to using a machine learning algo - I thought it would be fun to first explore how far we can get with computer vision. Perhaps we'll even end up with a hybrid approach - computer vision still has it's place!
 
 An example image:
 
