@@ -593,12 +593,105 @@ I ended up spending a lot of time playing ith the javascript implementation of T
 The library is really easy to use and intuitive, and a similar concept of just passing in an image and get bounding boxes that should be plotted. I also like this as I could use an old broken phone with zooming capability to narrow down the monitoring area.
 
 
-Full example:
+Full example (with some fun little functions):
 
 
 {% include tfjs.html %}
 
 
+I ended up with an implementation using tensorflow and a compact version of the COCOnet model.
+
+This works well, and I'd imagine with some optimization could work on an edge device.
+
+Interestingly, I think the performance is similar to our implementation above. Obviously this solution would have huge benefits in that it wouldn't need to be configured to the environment, would count more than just seagulls, and isn't reliant on where the camera is positioned (with the pure machine vision solution it would have de be configured per deployment).
+
+Code example:
+
+{% highlight python %}
+
+import tensorflow as tf
+import numpy as np
+import cv2
+import os
+
+
+class ObjectDetector:
+    def __init__(self, model_path):
+        self.model = tf.saved_model.load(model_path)
+    
+    def detect_objects(self, image_path):
+        # Read image
+        image = cv2.imread(image_path)
+        original_height, original_width, _ = image.shape
+
+        # Resize the image to 640x640
+        resized_image = cv2.resize(image, (640, 640))
+        cv2.imshow('Resized_image',resized_image)
+
+        # Preprocess the image
+        image_np = np.expand_dims(resized_image, axis=0)
+        input_tensor = tf.convert_to_tensor(image_np, dtype=tf.float32)
+        input_tensor = tf.image.resize(input_tensor, (640, 640))
+        input_tensor = tf.cast(input_tensor, tf.uint8)
+
+        # Run the model to get predictions
+        detection_model = self.model.signatures["serving_default"]
+        output_dict = detection_model(input_tensor)
+
+        # Get the bounding box coordinates and class labels
+        boxes = output_dict["detection_boxes"].numpy()[0]
+        classes = output_dict["detection_classes"].numpy()[0].astype(np.int32)
+        scores = output_dict["detection_scores"].numpy()[0]
+        num_birds = 0
+
+        # Plot the bounding boxes on the image
+        for i in range(boxes.shape[0]):
+            if scores[i] > 0.1:
+                ymin, xmin, ymax, xmax = boxes[i]
+
+                # The bbox coordinates need to be converted back to the original resolution prior to display
+                original_xmin = int(xmin * original_width)
+                original_ymin = int(ymin * original_height)
+                original_xmax = int(xmax * original_width)
+                original_ymax = int(ymax * original_height)
+
+                bbox_width = original_xmax - original_xmin
+                bbox_height = original_ymax - original_ymin
+
+                # Remove large BBOXs
+                if bbox_width > 0.3 * original_width or bbox_height > 0.3 * original_height:
+                    continue
+
+                #add a count of birds
+                if classes[i] == 16:
+                    num_birds += 1
+
+                cv2.rectangle(image, (original_xmin, original_ymin), (original_xmax, original_ymax), (255, 0, 0), 2)
+
+                # Get class name from label_map
+                class_name = self.get_class_name(classes[i])
+                cv2.putText(image, f"{class_name}: {scores[i]:.2f}", (original_xmin, original_ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+
+        # Display the image
+        cv2.imshow("Detected Objects", image)
+        cv2.waitKey(0)
+        cv2.imwrite('ImageBBOX.jpg', image)
+        print(f'{num_birds} birds detected')
+        # Close the window
+        cv2.destroyAllWindows()
+
+    def get_class_name(self, class_id):
+        # Add your label_map code here
+        pass
+
+
+if __name__ == "__main__":
+    model_path = r"C:\Users\shunt\Desktop
+
+
+{% endhighlight %}
+
+75 birds detected - let's compare which ones it caught:
 
 
 
