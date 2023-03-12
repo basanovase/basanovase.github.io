@@ -693,5 +693,5 @@ if __name__ == "__main__":
 
 75 birds detected - let's compare which ones it caught:
 
-![SEAGULLPROOF](/assets/COCOResults.jpg)
+![SEAGULLPROOF](/assets/COCOResults.png)
 
