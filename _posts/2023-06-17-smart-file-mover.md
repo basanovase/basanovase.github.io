@@ -9,7 +9,9 @@ categories: media
 
 
 
-A fun little experiment with using ChatGPT to aid with file classification
+A fun little experiment with using ChatGPT to aid with file classification!
+
+I use chatGPT, in addition to the google custom search API, to figure out meaningfully what files are, if it isn't confident, google it and check!
 
 
 {% highlight python %}
