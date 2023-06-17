@@ -28,9 +28,13 @@ import mimetypes
 import openai
 import keyring
 import logging
+import requests
+import json
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
+
+
 
 def classify_file(filename, prompt_template):
     """
@@ -40,6 +44,23 @@ def classify_file(filename, prompt_template):
 
     prompt = prompt_template.format(filename=filename)
     response = openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=5)
+
+    # Use Google Custom Search API for more context
+    google_search_api_key = keyring.get_password('google','burping') # Replace with your API key
+    google_cx = keyring.get_password('google_cx','burping') # Replace with your Custom Search JSON API cx
+
+
+    url = f"https://www.googleapis.com/customsearch/v1?key={google_search_api_key}&cx={google_cx}&q={filename}"
+    response = requests.get(url)
+    search_results = json.loads(response.text)
+
+    # Use the snippet from the first search result as additional context
+    if 'items' in search_results and len(search_results['items']) > 0:
+        logging.info(f"Hmm, not sure about that one, googling it!")
+        context = search_results['items'][0]['snippet']
+        prompt += f"\nAdditional context: {context}"
+        logging.info(f"I found this info: {context}")
+        response = openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=5)
 
     return response.choices[0].text.strip()
 
@@ -59,23 +80,35 @@ def clean_downloads(path_to_downloads):
         "video": "Videos",
         "zip": "Personal Documentation",
         "code": "Code",
-        "ebook_pdf": "eBooks and PDFs",
+        "ebook_pdf_technical": "eBooks and PDFs/Technical",
+        "ebook_pdf_novels": "eBooks and PDFs/Novels",
+        "ebook_pdf_research": "eBooks and PDFs/Research Papers",
+        "ebook_pdf_educational": "eBooks and PDFs/Educational",
+        "ebook_pdf_business": "eBooks and PDFs/Business",
+        "job_descriptions": "Useful Documents/Job Descriptions",
+        "business_process": "Useful Documents/Business Process",
+        "financial_statements": "Useful Documents/Financial Statements",
+        "contracts_agreements": "Useful Documents/Contracts and Agreements",
+        "meeting_notes": "Useful Documents/Meeting Notes",
         "csv": "Data",
         "other": "Others"
     }
 
     # Template for GPT-4 prompt
-    prompt_template = "Given the filename '{filename}', which category does it best fit into: application, audio, image, message, text, video, zip, code, ebook_pdf, csv, or other? Use your knowledge of file types in a Downloads folder. Take into account their extensions or name."
+    prompt_template = """
+    Given the filename '{filename}', which category does it best fit into: 
+    application, audio, image, message, text, video, zip, code, 
+    ebook_pdf_technical, ebook_pdf_novels, ebook_pdf_research, ebook_pdf_educational, ebook_pdf_business, 
+    job_descriptions, business_process, financial_statements, contracts_agreements, meeting_notes, csv, or other?
+    Use your knowledge of file types in a Downloads folder. Take into account their extensions or name."""
 
     # Iterate over files and directories in Downloads directory
     for filename in os.listdir(path_to_downloads):
         file_path = os.path.join(path_to_downloads, filename)
 
-        # Skip 'bucket' directories
         if filename in folder_map.values():
-            logging.info(f"Skipping bucket directory: {filename}")
+            logging.info(f"Skipping bucket: {filename}")
             continue
-
         # Guess file type if it's a file
         if os.path.isfile(file_path):
             file_type, _ = mimetypes.guess_type(filename)
@@ -94,9 +127,8 @@ def clean_downloads(path_to_downloads):
 
         # Create new folder if not exist
         new_folder_path = os.path.join(path_to_downloads, folder)
-        if not os.path.exists(new_folder_path):
-            os.mkdir(new_folder_path)
-            logging.info(f"Created folder: {new_folder_path}")
+        os.makedirs(new_folder_path, exist_ok=True)
+        logging.info(f"Created folder: {new_folder_path}")
 
         # Move file or directory to the new folder
         new_file_path = os.path.join(new_folder_path, filename)
@@ -107,6 +139,9 @@ def clean_downloads(path_to_downloads):
 
 # Usage
 clean_downloads("/Users/flynnmclean/Downloads")
+
+
+
 
 {% endhighlight %}
 
