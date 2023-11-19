@@ -97,10 +97,11 @@ th {
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <h1>Object detection using pre trained model in TensorFlow.js</h1>
+    <h1>Object detection using COCO model in TensorFlow.js, with ChatGPT for species identification</h1>
 
 
     <section id="demos" class="invisible">
+
 
 
       <div id="liveView" class="camView">
@@ -109,12 +110,20 @@ th {
         <button id="reportingButton" onclick="enableReporting()">Enable Reporting</button>
 
         <button id="alertingButton" onclick="enableAlerting()">Enable Alerting</button>
+        <button id="snipButton">Capture Objects</button>
+        <button id="categorizeSpeciesButton">Categorize Species</button>
+
         <br>
         <br>
         <video id="webcam" autoplay muted width="640" height="480"></video>
 
       </div>
-
+      <table id="object_picture_table">
+        <tr>
+          <th>Image</th>
+          <th>Label</th>
+        </tr>
+      </table>
 
     </section>
 
@@ -437,6 +446,119 @@ function addDataToTable(objectType, objectCount, confidence) {
     dateCell.innerHTML = dateString;
   }
 }
+
+const snipButton = document.getElementById('snipButton');
+   snipButton.addEventListener('click', function() {
+     captureAndDisplayObjects();
+   });
+
+   function captureAndDisplayObjects() {
+  // Capture current frame
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext('2d');
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Detect and display objects
+  model.detect(video).then(function(predictions) {
+    predictions.forEach(prediction => {
+      if (prediction.score > 0.65) {
+        const [x, y, width, height] = prediction.bbox;
+        const objectCanvas = document.createElement('canvas');
+        objectCanvas.width = width;
+        objectCanvas.height = height;
+        const objectContext = objectCanvas.getContext('2d');
+        objectContext.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+        addToTable(objectCanvas.toDataURL(), prediction.class);
+      }
+    });
+  });
+}
+
+function addToTable(imageData, label) {
+  const table = document.getElementById('object_picture_table');
+  const row = table.insertRow();
+  const imageCell = row.insertCell();
+  const labelCell = row.insertCell();
+  const img = new Image();
+  img.src = imageData;
+  imageCell.appendChild(img);
+  labelCell.innerHTML = label;
+}
+
+document.getElementById('categorizeSpeciesButton').addEventListener('click', function() {
+  categorizeSpecies();
+});
+
+function categorizeSpecies() {
+  var images = document.querySelectorAll('#object_picture_table img');
+
+  images.forEach((img, index) => {
+    var canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var dataURL = canvas.toDataURL('image/jpeg').replace(/^data:image\/(png|jpg);base64,/, "");
+    var base64Data = dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+
+    // OpenAI API call
+    fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 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'
+      },
+      body: JSON.stringify({
+        "model": "gpt-4-vision-preview",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Return bird species best guess based on lat -41.344480, long 174.757610, return count as JSON {species:count}, return only the scientific species name, and the count array estimate, with no other narrative"
+              },
+              {
+                "type": "image_url",
+                "image_url": {
+                  "url": `${dataURL},`
+                }
+              }
+            ]
+          }
+        ],
+        "max_tokens": 300
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Assuming the response data contains the species information in a specific format
+      // Update the object_table with the response
+      updateTableWithSpecies(index, data.species);
+    })
+    .catch(error => console.error('Error:', error));
+  });
+}
+
+function updateTableWithSpecies(rowIndex, response) {
+  var table = document.getElementById('object_picture_table');
+  if (table && table.rows.length > rowIndex + 1) { // +1 to account for header row
+    var responseCell = table.rows[rowIndex + 1].insertCell();
+
+    // Convert the entire response object to a JSON string
+    var responseText = JSON.stringify(response, null, 2); // Pretty print the JSON
+
+    // Set the text as the inner HTML of the new cell
+    responseCell.innerHTML = responseText;
+  } else {
+    console.error("Table not found or row index out of bounds");
+  }
+}
+
+
+
 
 
 
