@@ -2,36 +2,39 @@
 <html lang="en">
   <head>
     <style>
-      body {
+      #webcam-container {
         font-family: helvetica, arial, sans-serif;
         margin: 2em;
         color: #3D3D4D;
       }
-      h1 {
+      #webcam-container h1 {
         font-style: italic;
         color: #AF6F04;
       }
-      video {
+      #webcam-container video {
         display: block;
       }
-      section {
+      #webcam-container section {
         opacity: 1;
         transition: opacity 500ms ease-in-out;
       }
-      .removed {
+      #webcam-container .removed {
         display: none;
       }
-      .invisible {
+      #webcam-container .invisible {
         opacity: 0.2;
       }
-      .camView {
-        position: relative;
-        float: left;
-        width: calc(100% - 20px);
-        margin: 10px;
-        cursor: pointer;
+      #webcam-container #demos {
+        display: flex;
+        flex-wrap: wrap;
       }
-      .camView p {
+      #webcam-container .camView,
+      #webcam-container #tables-container {
+        flex: 1 1 calc(50% - 20px);
+        margin: 10px;
+        position: relative;
+      }
+      #webcam-container .camView p {
         position: absolute;
         padding: 3px;
         background-color: rgba(255, 11, 0, 0.85);
@@ -40,32 +43,23 @@
         z-index: 2;
         font-size: 11px;
       }
-      .highlighter {
+      #webcam-container .highlighter {
         background: rgba(0, 255, 0, 0.25);
         border: 1px dashed #fff;
         z-index: 1;
         position: absolute;
       }
-      table {
+      #webcam-container table {
         border-collapse: collapse;
         width: 100%;
       }
-      .camView {
-        width: calc(50% - 20px);
-        float: left;
-        margin: 10px;
-      }
-      table {
-        width: calc(50% - 20px);
-        float: right;
-        margin: 10px;
-      }
-      th, td {
+      #webcam-container th,
+      #webcam-container td {
         border: 1px solid black;
         padding: 8px;
         text-align: left;
       }
-      th {
+      #webcam-container th {
         background-color: #f2f2f2;
       }
     </style>
@@ -87,12 +81,14 @@
           <br><br>
           <video id="webcam" autoplay muted width="640" height="480"></video>
         </div>
-        <table id="object_picture_table">
-          <tr>
-            <th>Image</th>
-            <th>Label</th>
-          </tr>
-        </table>
+        <div id="tables-container">
+          <table id="object_picture_table">
+            <tr>
+              <th>Image</th>
+              <th>Label</th>
+            </tr>
+          </table>
+        </div>
       </section>
     </div>
     <!-- Import TensorFlow.js library -->
@@ -181,7 +177,7 @@
               liveView.appendChild(p);
               children.push(highlighter);
               children.push(p);
-              const currentCount = countObjectInstances(prediction_name);
+              const currentCount = countObjectInstances(predictions[n].class);
               if(document.getElementById("object_table")) {
                   addDataToTable(predictions[n].class, currentCount, confidence_perc);
               }
@@ -212,7 +208,7 @@
         headerRow.appendChild(confidenceHeader);
         headerRow.appendChild(dateHeader);
         table.appendChild(headerRow);
-        document.body.appendChild(table);
+        document.getElementById('tables-container').appendChild(table);
       }
 
       function enableAlerting() {
@@ -236,7 +232,7 @@
         headerRow.appendChild(durationHeader);
         headerRow.appendChild(alertTypeHeader);
         table.appendChild(headerRow);
-        document.body.appendChild(table);
+        document.getElementById('tables-container').appendChild(table);
         var objectTypes = ["person", "car", "truck", "bicycle", "motorcycle", "bus", "train", "boat", "potted plant", "other"];
         for (var i = 0; i < objectTypes.length; i++) {
           var row = document.createElement("tr");
@@ -250,7 +246,6 @@
           row.appendChild(thresholdCell);
           var durationCell = document.createElement("td");
           var durationInput = document.createElement("input");
-          var durationCell = document.createElement("td");
           durationInput.setAttribute("type", "number");
           durationInput.setAttribute("step", "0.100");
           durationCell.appendChild(durationInput);
